@@ -1,9 +1,9 @@
 #include "stm32f4xx.h"
 
 struct State {
-	uint32_t Out;
-	uint32_t Time;
-	uint32_t Next[4];
+	uint32_t lights_output;
+	uint32_t time_delay;
+	uint32_t next_state[4];
 };
 
 typedef const struct State State_t;
@@ -32,9 +32,9 @@ int main(void) {
 	// initialize inputs and outputs	
 	current_state = GO_NORTH; // initial state
 	while(1){
-		// output LIGHT = FSM[current_state].Out
-		// wait FSM[current_state].Time
+		// output LIGHT = FSM[current_state].lights_output
+		// wait FSM[current_state].time_delay
 		// read SENSORS Input = SENSOR
-		current_state = FSM[current_state].Next[input];
+		current_state = FSM[current_state].next_state[input];
 	}
 }
