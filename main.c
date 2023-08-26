@@ -9,17 +9,17 @@ struct State {
 typedef const struct State State_t;
 
 // states
-#define goN 0
-#define waitN 1
-#define	goE 2
-#define waitE 3
+#define GO_NORTH 0
+#define WAIT_NORTH 1
+#define	GO_EAST 2
+#define WAIT_EAST 3
 
 // finite state machine {6-bit output, time delay, state transitions}
 State_t FSM[4]={
- {0x21,3000,{goN,waitN,goN,waitN}},
- {0x22, 500,{goE,goE,goE,goE}},
- {0x0C,3000,{goE,goE,waitE,waitE}},
- {0x14, 500,{goN,goN,goN,goN}}
+ {0x21,3000,{GO_NORTH,WAIT_NORTH,GO_NORTH,WAIT_NORTH}},
+ {0x22, 500,{GO_EAST,GO_EAST,GO_EAST,GO_EAST}},
+ {0x0C,3000,{GO_EAST,GO_EAST,WAIT_EAST,WAIT_EAST}},
+ {0x14, 500,{GO_NORTH,GO_NORTH,GO_NORTH,GO_NORTH}}
 };
 
 uint32_t current_state; // index to the current state
@@ -30,7 +30,7 @@ int main(void) {
 	// initialize SysTick
 	// initialize port clocks
 	// initialize inputs and outputs	
-	current_state = goN; // initial state
+	current_state = GO_NORTH; // initial state
 	while(1){
 		// output LIGHT = FSM[current_state].Out
 		// wait FSM[current_state].Time
