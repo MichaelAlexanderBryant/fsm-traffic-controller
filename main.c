@@ -9,10 +9,10 @@ struct State {
 typedef const struct State State_t;
 
 // states
-#define goN		0
-#define waitN	1
-#define	goE		2
-#define waitE	3
+#define goN 0
+#define waitN 1
+#define	goE 2
+#define waitE 3
 
 // finite state machine {6-bit output, time delay, state transitions}
 State_t FSM[4]={
