@@ -1,5 +1,4 @@
 #include "stm32f4xx.h"
-#include "math.h"
 
 // finite-state machine {6-bit output, time delay, state transitions}
 struct state {
@@ -25,13 +24,12 @@ state_t FSM[4]={
 
 void ppl_init(void);
 void systick_delay(int n);
-int binary_to_decimal(long long num);
 
 uint32_t current_state = GO_Y; // index the current state
-uint32_t input = 0; // 2-bit sensor reading
+uint32_t input; // 2-bit sensor reading
 
 int main(void) {
-	//ppl_init(); // initialize phase-lock loop (PPL) at 80MHz
+	ppl_init(); // initialize phase-lock loop (PPL) at 80MHz
 	
 	RCC->AHB1ENR |= 1; // enable GPIOA clock (output)
 	RCC->AHB1ENR |= 4; // enable GPIOC clock (input)
@@ -64,6 +62,8 @@ void ppl_init(void){
 	RCC->CR |= (1<<16); // enable HSE clock
 	while(!(RCC->CR & (1<<17))); // wait for HSE
 	RCC->CR &= ~(1<<24); // disable PLL
+	
+	RCC->PLLCFGR |= 1<<22; // configure PLL input source
 
 	// configure PLLM
 	RCC->PLLCFGR &= ~(0x1F);
@@ -84,7 +84,7 @@ void ppl_init(void){
 	RCC->CFGR &= ~(0x03);
 	RCC->CFGR |= 0x02;
 	
-	//	// HCLK prescale=1 (AHB max=80MHz)
+//	// HCLK prescale=1 (AHB max=80MHz)
 //	RCC->CFGR &= ~(0xF<<4);
 //	
 //	// APB1 prescalar=4 (APB1 max=42MHz)
@@ -99,7 +99,7 @@ void ppl_init(void){
 void systick_delay(int n){
 	int i;
 	
-	SysTick->LOAD = 16000; // reload with number of clocks per millisecond (1ms * 80MHz)
+	SysTick->LOAD = 80000; // reload with number of clocks per millisecond (1ms * 80MHz)
 	SysTick->VAL = 0; // clear current value register
 	SysTick->CTRL = 0x5; // enable timer
 	
@@ -108,16 +108,4 @@ void systick_delay(int n){
 	}
 	SysTick->CTRL = 0; // Stop the timer
 	
-}
-
-// function to convert binary to decimal
-int binary_to_decimal(long long num) {
-    int i = 0, decimal= 0;
-    while (num!=0) {
-        int digit = num % 10;
-        decimal += digit * pow(2,i);
-        num /= 10;
-        i++;
-    }
-    return decimal;
 }

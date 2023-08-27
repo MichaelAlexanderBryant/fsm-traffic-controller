@@ -39,47 +39,44 @@ uint32_t current_state = GO_Y; // index the current state
 main.c(30): note: declare 'static' if the variable is not intended to be used outside of this translation unit
 uint32_t current_state = GO_Y; // index the current state
 ^
-main.c(31): warning: no previous extern declaration for non-static variable 'input' [-Wmissing-variable-declarations]
-uint32_t input = 0; // 2-bit sensor reading
-         ^
-main.c(31): note: declare 'static' if the variable is not intended to be used outside of this translation unit
-uint32_t input = 0; // 2-bit sensor reading
-^
 main.c(39): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
-        GPIOA->MODER &= ~0x03F0030F; // PA0-PA5 (output)
+        GPIOA->MODER &= ~0x03F0030F; // clear PA0, PA1, PA4, PA10, PA11, PA12
                      ~~ ^~~~~~~~~~~
 main.c(41): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
-        GPIOC->MODER &= ~0x0000000F; // PC0-PC1 (input)
+        GPIOC->MODER &= ~0x0000000F; // clear PC0 and PC1, setting as input
                      ~~ ^~~~~~~~~~~
 main.c(46): warning: implicit conversion changes signedness: 'const uint32_t' (aka 'const unsigned int') to 'int' [-Wsign-conversion]
-                systick_delay(FSM[current_state].time_delay);
+                systick_delay(FSM[current_state].time_delay); // delay by speciied FSM time
                 ~~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
-main.c(67): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+main.c(66): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
         RCC->CR &= ~(1<<24); // disable PLL
                 ~~ ^~~~~~~~
-main.c(70): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+main.c(71): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
         RCC->PLLCFGR &= ~(0x1F);
                      ~~ ^~~~~~~
-main.c(74): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+main.c(75): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
         RCC->PLLCFGR &= ~(0x1FF<<6);
                      ~~ ^~~~~~~~~~~
-main.c(78): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+main.c(79): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
         RCC->PLLCFGR &= ~(0x03<<16);
                      ~~ ^~~~~~~~~~~
-main.c(85): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
+main.c(86): warning: implicit conversion changes signedness: 'int' to 'unsigned int' [-Wsign-conversion]
         RCC->CFGR &= ~(0x03);
                   ~~ ^~~~~~~
-main.c(119): warning: implicit conversion turns floating-point number into integer: 'double' to 'int' [-Wfloat-conversion]
-        decimal += digit * pow(2,i);
-        ~~~~~~~~^~~~~~~~~~~~~~~~~~~
-main.c(124): warning: no newline at end of file [-Wnewline-eof]
+main.c(113): warning: no newline at end of file [-Wnewline-eof]
 }
  ^
-13 warnings generated.
+main.c(31): warning: no previous extern declaration for non-static variable 'input' [-Wmissing-variable-declarations]
+uint32_t input; // 2-bit sensor reading
+         ^
+main.c(31): note: declare 'static' if the variable is not intended to be used outside of this translation unit
+uint32_t input; // 2-bit sensor reading
+^
+12 warnings generated.
 compiling main.c...
 linking...
-Program Size: Code=804 RO-data=564 RW-data=0 ZI-data=1640  
-".\Objects\fsm-traffic-controller.axf" - 0 Error(s), 13 Warning(s).
+Program Size: Code=996 RO-data=564 RW-data=0 ZI-data=1640  
+".\Objects\fsm-traffic-controller.axf" - 0 Error(s), 12 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -110,7 +107,7 @@ Package Vendor: Keil
       Source file:   Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/arm/startup_stm32f446xx.s
       Source file:   MDK/Device/Source/ARM/STM32F4xx_OTP.s
       Source file:   Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>
