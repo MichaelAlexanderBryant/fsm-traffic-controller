@@ -1,4 +1,5 @@
 #include "stm32f4xx.h"
+#include "math.h"
 
 // finite-state machine {6-bit output, time delay, state transitions}
 struct state {
@@ -16,34 +17,39 @@ typedef const struct state state_t; // store state struct in flash ROM
 #define WAIT_X 3
 
 state_t FSM[4]={
- {0x21,3000,{GO_Y,WAIT_Y,GO_Y,WAIT_Y}},
- {0x22, 500,{GO_X,GO_X,GO_X,GO_X}},
- {0x0C,3000,{GO_X,GO_X,WAIT_X,WAIT_X}},
- {0x14, 500,{GO_Y,GO_Y,GO_Y,GO_Y}}
+ {0x1001,3000,{GO_Y,WAIT_Y,GO_Y,WAIT_Y}},
+ {0x1002, 500,{GO_X,GO_X,GO_X,GO_X}},
+ {0x0410,3000,{GO_X,GO_X,WAIT_X,WAIT_X}},
+ {0x0810, 500,{GO_Y,GO_Y,GO_Y,GO_Y}}
 };
 
 void ppl_init(void);
-void delay_ms(int n);
+void systick_delay(int n);
+int binary_to_decimal(long long num);
 
-uint32_t current_state; // index the current state
-uint32_t input; // 2-bit sensor reading
+uint32_t current_state = GO_Y; // index the current state
+uint32_t input = 0; // 2-bit sensor reading
 
 int main(void) {
-	ppl_init(); // initialize phase-lock loop (PPL) at 80MHz
+	//ppl_init(); // initialize phase-lock loop (PPL) at 80MHz
 	
 	RCC->AHB1ENR |= 1; // enable GPIOA clock (output)
 	RCC->AHB1ENR |= 4; // enable GPIOC clock (input)
 
-	GPIOA->MODER &= 0x00000FFF; // PA0-PA5 (output)
-	GPIOA->MODER |= 0x00000555; // 010101010101
-	GPIOC->MODER &= 0x0000000F; // PC0-PC1 (input)
+	GPIOA->MODER &= ~0x03F0030F; // clear PA0, PA1, PA4, PA10, PA11, PA12
+	GPIOA->MODER |= 0x01500105; // set PA0, PA1, PA4, PA10, PA11, PA12 as output
+	GPIOC->MODER &= ~0x0000000F; // clear PC0 and PC1, setting as input
 	
-	current_state = GO_Y; // initial state
 	while(1){
-		GPIOA->ODR = FSM[current_state].set_output;
-		delay_ms(FSM[current_state].time_delay);
-		input = GPIOC->IDR;
-		current_state = FSM[current_state].next_state[input];
+		GPIOA->ODR &= 0; // turn pins off
+		GPIOA->ODR |= FSM[current_state].set_output; // set current state
+		systick_delay(FSM[current_state].time_delay); // delay by speciied FSM time
+		input = GPIOC->IDR; // read sensors
+		if ((input & 0x02)&&(input & 0x01)) {input = 3;} // if both high
+		else if (input & 0x02) {input = 2;} // if sensor Y is high
+		else if (input & 0x01) {input = 1;} // if sensor X is high
+		else {input = 0;} // else no sensor is high
+		current_state = FSM[current_state].next_state[input]; // go to next state
 	}
 }
 
@@ -90,10 +96,10 @@ void ppl_init(void){
 //	RCC->CFGR |= 0x4<<13;
 }
 
-void delay_ms(int n){
+void systick_delay(int n){
 	int i;
 	
-	SysTick->LOAD = 80000; // reload with number of clocks per millisecond (1ms * 80MHz)
+	SysTick->LOAD = 16000; // reload with number of clocks per millisecond (1ms * 80MHz)
 	SysTick->VAL = 0; // clear current value register
 	SysTick->CTRL = 0x5; // enable timer
 	
@@ -102,4 +108,16 @@ void delay_ms(int n){
 	}
 	SysTick->CTRL = 0; // Stop the timer
 	
+}
+
+// function to convert binary to decimal
+int binary_to_decimal(long long num) {
+    int i = 0, decimal= 0;
+    while (num!=0) {
+        int digit = num % 10;
+        decimal += digit * pow(2,i);
+        num /= 10;
+        i++;
+    }
+    return decimal;
 }
