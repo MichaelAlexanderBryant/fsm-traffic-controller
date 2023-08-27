@@ -23,14 +23,14 @@ state_t FSM[4]={
 };
 
 void ppl_init(void);
-void systick_init(void);
+void delay_ms(int n);
 
 uint32_t current_state; // index the current state
 uint32_t input; // 2-bit sensor reading
 
 int main(void) {
 	ppl_init(); // initialize phase-lock loop (PPL) at 80MHz
-	// initialize SysTick
+	
 	RCC->AHB1ENR |= 1; // enable GPIOA clock (output)
 	RCC->AHB1ENR |= 4; // enable GPIOC clock (input)
 
@@ -41,7 +41,7 @@ int main(void) {
 	current_state = GO_Y; // initial state
 	while(1){
 		GPIOA->ODR = FSM[current_state].set_output;
-		// wait FSM[current_state].time_delay
+		delay_ms(FSM[current_state].time_delay);
 		input = GPIOC->IDR;
 		current_state = FSM[current_state].next_state[input];
 	}
@@ -77,10 +77,8 @@ void ppl_init(void){
 	// assign PLL as the system clock
 	RCC->CFGR &= ~(0x03);
 	RCC->CFGR |= 0x02;
-}
-
-void systick_init(void){
-//	// HCLK prescale=1 (AHB max=80MHz)
+	
+	//	// HCLK prescale=1 (AHB max=80MHz)
 //	RCC->CFGR &= ~(0xF<<4);
 //	
 //	// APB1 prescalar=4 (APB1 max=42MHz)
@@ -90,4 +88,18 @@ void systick_init(void){
 //	// APB2 prescaler=2 (APB2 max = 84MHz)
 //	RCC->CFGR &= ~(0x7<<13);
 //	RCC->CFGR |= 0x4<<13;
+}
+
+void delay_ms(int n){
+	int i;
+	
+	SysTick->LOAD = 80000; // reload with number of clocks per millisecond (1ms * 80MHz)
+	SysTick->VAL = 0; // clear current value register
+	SysTick->CTRL = 0x5; // enable timer
+	
+	for(i=0; i<n; i++){
+		while((SysTick->CTRL & 0x10000) == 0) {} // wait until the COUNTFLAG is set
+	}
+	SysTick->CTRL = 0; // Stop the timer
+	
 }
